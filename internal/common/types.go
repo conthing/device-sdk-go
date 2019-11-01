@@ -2,6 +2,8 @@ package common
 
 import (
 	"fmt"
+
+	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 )
 
 type ServiceInfo struct {
@@ -32,6 +34,30 @@ type Config struct {
 	Logging LoggingInfo
 
 	Writable WritableInfo
+
+	Device DeviceInfo
+
+	DeviceList []DeviceConfig `consul:"-"`
+}
+
+type DeviceConfig struct {
+	Name        string
+	Profile     string
+	Description string
+	Labels      []string
+	Protocols   map[string]contract.ProtocolProperties
+	AutoEvents  []contract.AutoEvent
+}
+
+type DeviceInfo struct {
+	DataTransform  bool
+	InitCmd        string
+	InitCmdArgs    string
+	MaxCmdOps      int
+	MaxCmdValueLen int
+	RemoveCmd      string
+	RemoveCmdArgs  string
+	ProfilesDir    string
 }
 
 type WritableInfo struct {
@@ -64,4 +90,13 @@ type LoggingInfo struct {
 func (c ClientInfo) Url() string {
 	url := fmt.Sprintf("%s://%s:%v", c.Protocol, c.Host, c.Port)
 	return url
+}
+
+type Telemetry struct {
+	Alloc,
+	TotalAlloc,
+	Sys,
+	Mallocs,
+	Frees,
+	LiveObjects uint64
 }
