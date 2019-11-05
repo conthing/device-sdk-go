@@ -14,8 +14,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/conthing/device-sdk-go/internal/cache"
-	"github.com/conthing/device-sdk-go/internal/common"
+	"github.com/conthing/device-sdk-go/sdk/cache"
+	"github.com/conthing/device-sdk-go/sdk/common"
 	"github.com/edgexfoundry/go-mod-core-contracts/models"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 	"github.com/google/uuid"

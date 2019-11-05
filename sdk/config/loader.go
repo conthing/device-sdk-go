@@ -18,7 +18,7 @@ import (
 	"github.com/edgexfoundry/go-mod-registry/pkg/types"
 
 	"github.com/edgexfoundry/go-mod-registry/registry"
-	"github.com/conthing/device-sdk-go/internal/common"
+	"github.com/conthing/device-sdk-go/sdk/common"
 )
 
 var (

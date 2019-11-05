@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/conthing/device-sdk-go/internal/cache"
-	"github.com/conthing/device-sdk-go/internal/provision"
+	"github.com/conthing/device-sdk-go/sdk/cache"
+	"github.com/conthing/device-sdk-go/sdk/provision"
 
-	"github.com/conthing/device-sdk-go/internal/common"
+	"github.com/conthing/device-sdk-go/sdk/common"
 	"github.com/google/uuid"
 )
 

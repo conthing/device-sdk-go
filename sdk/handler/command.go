@@ -8,13 +8,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/conthing/device-sdk-go/internal/transformer"
+	"github.com/conthing/device-sdk-go/sdk/transformer"
 
-	"github.com/conthing/device-sdk-go/internal/cache"
+	"github.com/conthing/device-sdk-go/sdk/cache"
 
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 
-	"github.com/conthing/device-sdk-go/internal/common"
+	"github.com/conthing/device-sdk-go/sdk/common"
 	dsModels "github.com/conthing/device-sdk-go/pkg/models"
 )
 
@@ -100,7 +100,7 @@ func CommandHandler(vars map[string]string, body string, method string) (*dsMode
 	cmdExists, err := cache.Profiles().CommandExists(d.Profile.Name, cmd)
 
 	if err != nil {
-		msg := fmt.Sprintf("internal error;Device:%s searching %s in cache failed; %s", d.Name, cmd, method)
+		msg := fmt.Sprintf("sdk error;Device:%s searching %s in cache failed; %s", d.Name, cmd, method)
 		common.LoggingClient.Error(msg)
 		return nil, common.NewServerError(msg, nil)
 	}

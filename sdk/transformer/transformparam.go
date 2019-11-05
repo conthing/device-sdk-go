@@ -5,7 +5,7 @@ import (
 	"math"
 	"strconv"
 
-	"github.com/conthing/device-sdk-go/internal/common"
+	"github.com/conthing/device-sdk-go/sdk/common"
 	dsModels "github.com/conthing/device-sdk-go/pkg/models"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 )

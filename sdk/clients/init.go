@@ -14,9 +14,9 @@ import (
 
 	"github.com/edgexfoundry/go-mod-core-contracts/clients"
 
-	"github.com/conthing/device-sdk-go/internal/common"
-	"github.com/conthing/device-sdk-go/internal/config"
-	"github.com/conthing/device-sdk-go/internal/endpoint"
+	"github.com/conthing/device-sdk-go/sdk/common"
+	"github.com/conthing/device-sdk-go/sdk/config"
+	"github.com/conthing/device-sdk-go/sdk/endpoint"
 )
 
 const clientCount int = 8

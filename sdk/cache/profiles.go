@@ -5,7 +5,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/conthing/device-sdk-go/internal/common"
+	"github.com/conthing/device-sdk-go/sdk/common"
 
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 )

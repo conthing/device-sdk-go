@@ -10,8 +10,8 @@ package controller
 import (
 	"net/http"
 
-	"github.com/conthing/device-sdk-go/internal/common"
-	"github.com/conthing/device-sdk-go/internal/controller/correlation"
+	"github.com/conthing/device-sdk-go/sdk/common"
+	"github.com/conthing/device-sdk-go/sdk/controller/correlation"
 	"github.com/gorilla/mux"
 )
 

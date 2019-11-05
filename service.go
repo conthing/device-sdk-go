@@ -10,12 +10,12 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/conthing/device-sdk-go/internal/clients"
-	"github.com/conthing/device-sdk-go/internal/controller"
+	"github.com/conthing/device-sdk-go/sdk/clients"
+	"github.com/conthing/device-sdk-go/sdk/controller"
 
-	"github.com/conthing/device-sdk-go/internal/config"
+	"github.com/conthing/device-sdk-go/sdk/config"
 
-	"github.com/conthing/device-sdk-go/internal/common"
+	"github.com/conthing/device-sdk-go/sdk/common"
 	"github.com/conthing/device-sdk-go/pkg/models"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/types"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"

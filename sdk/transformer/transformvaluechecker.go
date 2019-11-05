@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/conthing/device-sdk-go/internal/common"
+	"github.com/conthing/device-sdk-go/sdk/common"
 )
 
 func checkTransformedValueInRange(origin interface{}, transformed float64) bool {

@@ -13,7 +13,7 @@ import (
 
 	"github.com/edgexfoundry/go-mod-core-contracts/clients"
 	"github.com/google/uuid"
-	"github.com/conthing/device-sdk-go/internal/common"
+	"github.com/conthing/device-sdk-go/sdk/common"
 )
 
 func ManageHeader(next http.Handler) http.Handler {
