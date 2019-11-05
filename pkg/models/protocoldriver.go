@@ -13,10 +13,4 @@ type ProtocolDriver interface {
 	HandleWriteCommands(deviceName string, protocols map[string]contract.ProtocolProperties, reqs []CommandRequest, params []*CommandValue) error
 
 	Stop(force bool) error
-
-	AddDevice(deviceName string, procotols map[string]contract.ProtocolProperties, adminState contract.AdminState) error
-
-	UpdateDevice(deviceName string, procotols map[string]contract.ProtocolProperties, adminState contract.AdminState) error
-
-	RemoveDevice(deviceName string, procotols map[string]contract.ProtocolProperties) error
 }
