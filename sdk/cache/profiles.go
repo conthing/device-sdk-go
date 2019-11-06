@@ -238,8 +238,8 @@ func newProfileCache(profiles []contract.DeviceProfile) ProfileCache {
 		setOpMap.Store(profile.Name, setResult)
 		cmdMap.Store(profile.Name, commandSliceToMap(profile.CoreCommands))
 	}
-
-	return &profileCache{dpMap: dpMap, nameMap: nameMap, drMap: drMap, dcMap: getOpMap, setOpMap: setOpMap, ccMap: cmdMap}
+	pc = &profileCache{dpMap: dpMap, nameMap: nameMap, drMap: drMap, dcMap: getOpMap, setOpMap: setOpMap, ccMap: cmdMap}
+	return pc
 }
 
 func Profiles() ProfileCache {

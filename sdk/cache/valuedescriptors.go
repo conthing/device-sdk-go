@@ -87,10 +87,13 @@ func newValueDescriptorCache(descriptors []contract.ValueDescriptor) ValueDescri
 		descriptorMap.Store(descriptor.Name, descriptor)
 		nameMap.Store(descriptor.Id, descriptor.Name)
 	}
-	return &valueDescriptorCache{
+	dec, err := descriptorMap.Load("mode")
+	fmt.Sprintf(dec.(contract.ValueDescriptor).String(), err)
+	vdc = &valueDescriptorCache{
 		vdMap:   descriptorMap,
 		nameMap: nameMap,
 	}
+	return vdc
 }
 
 func ValueDescriptors() ValueDescriptorCache {
