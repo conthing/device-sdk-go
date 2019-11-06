@@ -10,13 +10,15 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/conthing/device-sdk-go/sdk/cache"
 	"github.com/conthing/device-sdk-go/sdk/clients"
 	"github.com/conthing/device-sdk-go/sdk/controller"
+	"github.com/conthing/device-sdk-go/sdk/provision"
 
 	"github.com/conthing/device-sdk-go/sdk/config"
 
-	"github.com/conthing/device-sdk-go/sdk/common"
 	"github.com/conthing/device-sdk-go/pkg/models"
+	"github.com/conthing/device-sdk-go/sdk/common"
 	"github.com/edgexfoundry/go-mod-core-contracts/clients/types"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 )
@@ -59,13 +61,13 @@ func (s *Service) Start(errChan chan error) (err error) {
 	}
 
 	// initialize devices, objects & profiles
-	//cache.InitCache()
-	//err = provision.LoadProfiles(common.CurrentConfig.Device.ProfilesDir)
+	cache.InitCache()
+	err = provision.LoadProfiles(common.CurrentConfig.Device.ProfilesDir)
 	if err != nil {
 		return fmt.Errorf("Failed to create the pre-defined Device Profiles")
 	}
 
-	//err = provision.LoadDevices(common.CurrentConfig.DeviceList)
+	err = provision.LoadDevices(common.CurrentConfig.DeviceList)
 	if err != nil {
 		return fmt.Errorf("Failed to create the pre-defined Devices")
 	}
