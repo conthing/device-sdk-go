@@ -28,7 +28,7 @@ func InitCache() {
 
 		ds, err := common.DeviceClient.DevicesForServiceByName(common.ServiceName, ctx)
 		if err != nil {
-			common.LoggingClient.Error(fmt.Sprintf("Device cache initialization failed :%v"), err)
+			common.LoggingClient.Error(fmt.Sprintf("Device cache initialization failed :%v", err))
 			ds = make([]contract.Device, 0)
 		}
 

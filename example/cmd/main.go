@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	serviceName = "device-simple"
-	version     = "0.0.1"
+	serviceName = "hvac-iracc"
+	version     = "1.0.0"
 )
 
 func main() {

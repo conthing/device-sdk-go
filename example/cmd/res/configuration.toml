@@ -53,22 +53,3 @@ FailWaitTime = 10
 [Logging]
 EnableRemote = false
 File = "./device-simple.log"
-
-# Pre-define Devices
-[[DeviceList]]
-  Name = "Simple-Device01"
-  Profile = "Simple-Device"
-  Description = "Example of Simple Device"
-  Labels = [ "industrial" ]
-  [DeviceList.Protocols]
-    [DeviceList.Protocols.other]
-      Address = "simple01"
-      Port = "300"
-  [[DeviceList.AutoEvents]]
-    Frequency = "10s"
-    OnChange = false
-    Resource = "Switch"
-  [[DeviceList.AutoEvents]]
-    Frequency = "30s"
-    OnChange = false
-    Resource = "Image"
