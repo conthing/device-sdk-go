@@ -14,8 +14,8 @@ import (
 
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 
-	"github.com/conthing/device-sdk-go/sdk/common"
 	dsModels "github.com/conthing/device-sdk-go/pkg/models"
+	"github.com/conthing/device-sdk-go/sdk/common"
 )
 
 func CommandAllHandler(cmd string, body string, method string) ([]*dsModels.Event, common.AppError) {

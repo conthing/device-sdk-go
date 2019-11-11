@@ -23,7 +23,7 @@ type DeviceCache interface {
 }
 
 type deviceCache struct {
-	dMap    sync.Map
+	dMap    *sync.Map
 	nameMap sync.Map
 }
 
@@ -114,7 +114,7 @@ func newDeviceCache(devices []contract.Device) DeviceCache {
 		devicesMap.Store(device.Name, device)
 		nameMap.Store(device.Id, device.Name)
 	}
-	dc = &deviceCache{dMap: devicesMap, nameMap: nameMap}
+	dc = &deviceCache{dMap: &devicesMap, nameMap: nameMap}
 	return dc
 }
 
