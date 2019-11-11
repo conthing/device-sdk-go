@@ -54,8 +54,7 @@ func (d *deviceCache) ForId(id string) (contract.Device, bool) {
 	}
 
 	if device, ok := d.dMap.Load(name); ok {
-		dev := device.(contract.Device)
-		return dev, ok
+		return device.(contract.Device), ok
 	} else {
 		return contract.Device{}, ok
 	}
