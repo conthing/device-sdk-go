@@ -21,7 +21,7 @@ type ValueDescriptorCache interface {
 }
 
 type valueDescriptorCache struct {
-	vdMap   sync.Map
+	vdMap   *sync.Map
 	nameMap sync.Map
 }
 
@@ -90,7 +90,7 @@ func newValueDescriptorCache(descriptors []contract.ValueDescriptor) ValueDescri
 	dec, err := descriptorMap.Load("mode")
 	fmt.Sprintf(dec.(contract.ValueDescriptor).String(), err)
 	vdc = &valueDescriptorCache{
-		vdMap:   descriptorMap,
+		vdMap:   &descriptorMap,
 		nameMap: nameMap,
 	}
 	return vdc
