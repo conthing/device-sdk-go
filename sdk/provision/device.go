@@ -67,3 +67,22 @@ func createDevice(dc common.DeviceConfig) error {
 
 	return nil
 }
+
+func RemoveDeviceByName(name string) error {
+	device, ok := cache.Devices().ForName(name)
+	if !ok {
+		msg := fmt.Sprintf("Device %s cannot be found in cache", name)
+		common.LoggingClient.Error(msg)
+		return fmt.Errorf(msg)
+	}
+
+	common.LoggingClient.Debug(fmt.Sprintf("Removing managed Device: %v\n", device))
+	ctx := context.WithValue(context.Background(), common.CorrelationHeader, uuid.New().String())
+	err := common.DeviceClient.DeleteByName(name, ctx)
+	if err != nil {
+		common.LoggingClient.Error(fmt.Sprintf("Delete Device %s from Core Metadata failed", name))
+		return err
+	}
+	err = cache.Devices().RemoveByName(name)
+	return err
+}
