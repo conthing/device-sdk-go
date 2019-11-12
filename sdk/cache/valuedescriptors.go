@@ -27,7 +27,8 @@ type valueDescriptorCache struct {
 
 func (v *valueDescriptorCache) ForName(name string) (contract.ValueDescriptor, bool) {
 	vd, ok := v.vdMap.Load(name)
-	return vd.(contract.ValueDescriptor), ok
+	valuedes := vd.(contract.ValueDescriptor)
+	return valuedes, ok
 }
 
 func (v *valueDescriptorCache) All() []contract.ValueDescriptor {
