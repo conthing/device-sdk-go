@@ -137,11 +137,13 @@ func (d *deviceCache) UpdateAdminState(id string, state contract.AdminState) err
 }
 
 func newDeviceCache(devices []contract.Device) DeviceCache {
+	common.Log.Debugf("",)
 	var devicesMap sync.Map
 	var nameMap sync.Map
 	for _, device := range devices {
 		devicesMap.Store(device.Name, &device)
 		nameMap.Store(device.Id, device.Name)
+		common.Log.Debugf("deviceid:%s,devicename:%s",device.Id,device.Name)
 	}
 	dc = &deviceCache{dMap: &devicesMap, nameMap: nameMap}
 	return dc
