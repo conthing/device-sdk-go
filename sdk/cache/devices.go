@@ -30,8 +30,13 @@ type deviceCache struct {
 func (d *deviceCache) All() []contract.Device {
 	var devices []contract.Device
 	f := func(k, v interface{}) bool {
-		devices = append(devices, v.(contract.Device))
-		return true
+		if dev,ok := v.(*contract.Device); !ok{
+			common.Log.Errorf("device %s cannot be found in cache", k)
+			return false
+		}else{
+			devices = append(devices, *dev)
+			return true
+		}
 	}
 	d.dMap.Range(f)
 	return devices
@@ -55,8 +60,13 @@ func (d *deviceCache) ForId(id string) (contract.Device, bool) {
 
 	if device, ok := d.dMap.Load(name); ok {
 		
-		dev := device.(*contract.Device)
-		return *dev, ok
+		if dev, ok2 := device.(*contract.Device); !ok2{
+			common.Log.Errorf("value in dMap[%s] not a Device type", name)
+			return contract.Device{}, false
+		}else{
+			return *dev, true
+		}
+
 	} else {
 		return contract.Device{}, ok
 	}
@@ -64,8 +74,12 @@ func (d *deviceCache) ForId(id string) (contract.Device, bool) {
 
 func (d *deviceCache) ForName(name string) (contract.Device, bool) {
 	if device, ok := d.dMap.Load(name); ok {
-		dev := device.(*contract.Device)
-		return *dev, ok
+		if dev, ok2 := device.(*contract.Device); !ok2{
+			common.Log.Errorf("value in dMap[%s] not a Device type", name)
+			return contract.Device{}, false
+		}else{
+			return *dev, true
+		}
 	} else {
 		return contract.Device{}, ok
 	}
@@ -76,10 +90,13 @@ func (d *deviceCache) RemoveByName(name string) error {
 	if !ok {
 		return fmt.Errorf("device %s does not exist in cache", name)
 	}
-	dev := device.(contract.Device)
-	d.nameMap.Delete(dev.Id)
-	d.dMap.Delete(name)
-	return nil
+	if dev, ok2 := device.(*contract.Device); !ok2{
+		return fmt.Errorf("value in dMap[%s] not a Device type", name)
+	}else{
+		d.nameMap.Delete(dev.Id)
+		d.dMap.Delete(name)
+		return nil
+	}
 }
 
 func (d *deviceCache) Remove(id string) error {
@@ -100,13 +117,19 @@ func (d *deviceCache) Update(device contract.Device) error {
 func (d *deviceCache) UpdateAdminState(id string, state contract.AdminState) error {
 	name, ok := d.nameMap.Load(id)
 	if !ok {
-		return fmt.Errorf("device %s cannot be found in cache", id)
+		return fmt.Errorf("device id %s cannot be found in cache", id)
 	}
 
-	device, ok := d.dMap.Load(name)
-	dev := device.(contract.Device)
+	if device, ok := d.dMap.Load(name); !ok{
+		return fmt.Errorf("device %s cannot be found in cache", name)
+	}
+
+	if dev, ok2 := device.(*contract.Device); !ok2{
+		return fmt.Errorf("value in dMap[%s] not a Device type", name)
+	}else{
 	dev.AdminState = state
 	return nil
+	}
 
 }
 
@@ -114,7 +137,7 @@ func newDeviceCache(devices []contract.Device) DeviceCache {
 	var devicesMap sync.Map
 	var nameMap sync.Map
 	for _, device := range devices {
-		devicesMap.Store(device.Name, device)
+		devicesMap.Store(device.Name, &device)
 		nameMap.Store(device.Id, device.Name)
 	}
 	dc = &deviceCache{dMap: &devicesMap, nameMap: nameMap}
