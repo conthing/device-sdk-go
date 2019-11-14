@@ -49,7 +49,7 @@ func (p *profileCache) All() []contract.DeviceProfile {
 
 func (p *profileCache) ForName(name string) (contract.DeviceProfile, bool) {
 	dp, ok := p.dpMap.Load(name)
-	return *dp.(*contract.DeviceProfile), ok
+	return dp.(contract.DeviceProfile), ok
 }
 
 func (p *profileCache) ForId(id string) (contract.DeviceProfile, bool) {
@@ -59,7 +59,7 @@ func (p *profileCache) ForId(id string) (contract.DeviceProfile, bool) {
 	}
 
 	dp, ok := p.dpMap.Load(name.(string))
-	return *dp.(*contract.DeviceProfile), ok
+	return dp.(contract.DeviceProfile), ok
 }
 
 func (p *profileCache) Add(profile contract.DeviceProfile) error {
