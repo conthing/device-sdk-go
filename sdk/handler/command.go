@@ -79,7 +79,6 @@ func CommandHandler(vars map[string]string, body string, method string) (*dsMode
 	var ok bool
 	var d contract.Device
 	utils_common.Log.Debugf("dKey:%s,cmd:%s",dKey,cmd)
-	utils_common.Log.Debugf("all device nameMap:%+v",cache.Devices().All())
 	if dKey != "" {
 		d, ok = cache.Devices().ForId(dKey)
 	} else {
