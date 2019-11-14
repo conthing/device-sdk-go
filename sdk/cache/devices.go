@@ -58,8 +58,11 @@ func (d *deviceCache) ForId(id string) (contract.Device, bool) {
 	if !ok {
 		return contract.Device{}, ok
 	}
+	
 	if namestring ,ok:= name.(string);ok{
+		common.Log.Debugf("name:%s", namestring)
 		if device, ok := d.dMap.Load(namestring); ok {
+			common.Log.Debugf("device:%+v", device)
 			if dev, ok2 := device.(*contract.Device); !ok2{
 				common.Log.Errorf("value in dMap[%s] not a Device type", name)
 				return contract.Device{}, false
