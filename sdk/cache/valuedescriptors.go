@@ -21,7 +21,7 @@ type ValueDescriptorCache interface {
 }
 
 type valueDescriptorCache struct {
-	vdMap   *sync.Map
+	vdMap   sync.Map
 	nameMap sync.Map
 }
 
@@ -92,7 +92,7 @@ func newValueDescriptorCache(descriptors []contract.ValueDescriptor) ValueDescri
 		nameMap.Store(descriptor.Id, descriptor.Name)
 	}
 	vdc = &valueDescriptorCache{
-		vdMap:   &descriptorMap,
+		vdMap:   descriptorMap,
 		nameMap: nameMap,
 	}
 	return vdc
