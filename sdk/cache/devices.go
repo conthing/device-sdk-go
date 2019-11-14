@@ -146,7 +146,8 @@ func newDeviceCache(devices []contract.Device) DeviceCache {
 	var devicesMap sync.Map
 	var nameMap sync.Map
 	for _, device := range devices {
-		devicesMap.Store(device.Name, &device)
+		dev := device
+		devicesMap.Store(device.Name, &dev)
 		nameMap.Store(device.Id, device.Name)
 		common.Log.Debugf("device:%+v,devicename:%s",&device,device.Name)
 	}
