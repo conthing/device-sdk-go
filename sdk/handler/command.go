@@ -16,6 +16,7 @@ import (
 
 	dsModels "github.com/conthing/device-sdk-go/pkg/models"
 	"github.com/conthing/device-sdk-go/sdk/common"
+	utils_common "github.com/conthing/utils/common"
 )
 
 func CommandAllHandler(cmd string, body string, method string) ([]*dsModels.Event, common.AppError) {
@@ -77,14 +78,14 @@ func CommandHandler(vars map[string]string, body string, method string) (*dsMode
 
 	var ok bool
 	var d contract.Device
-
+	utils_common.Log.Debugf("dKey:%s,cmd:%s",dKey,cmd)
 	if dKey != "" {
 		d, ok = cache.Devices().ForId(dKey)
 	} else {
 		dKey = vars[common.NameVar]
 		d, ok = cache.Devices().ForName(dKey)
 	}
-
+	utils_common.Log.Debugf("device:%+v",d)
 	if !ok {
 		msg := fmt.Sprintf("Device: %s not found; %s", dKey, method)
 		common.LoggingClient.Error(msg)
