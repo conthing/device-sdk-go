@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
+	"github.com/conthing/utils/common"
 )
 
 var (
@@ -122,14 +123,16 @@ func (d *deviceCache) UpdateAdminState(id string, state contract.AdminState) err
 
 	if device, ok := d.dMap.Load(name); !ok{
 		return fmt.Errorf("device %s cannot be found in cache", name)
+	}else{
+		if dev, ok2 := device.(*contract.Device); !ok2{
+			return fmt.Errorf("value in dMap[%s] not a Device type", name)
+		}else{
+		dev.AdminState = state
+		return nil
+		}
 	}
 
-	if dev, ok2 := device.(*contract.Device); !ok2{
-		return fmt.Errorf("value in dMap[%s] not a Device type", name)
-	}else{
-	dev.AdminState = state
-	return nil
-	}
+	
 
 }
 
