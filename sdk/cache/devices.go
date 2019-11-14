@@ -103,7 +103,7 @@ func (d *deviceCache) RemoveByName(name string) error {
 func (d *deviceCache) Remove(id string) error {
 	name, ok := d.nameMap.Load(id)
 	if !ok {
-		return fmt.Errorf("device %s does not exist in cache", name.(string))
+		return fmt.Errorf("device %s does not exist in cache", id)
 	}
 	return d.RemoveByName(name.(string))
 }
