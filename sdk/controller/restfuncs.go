@@ -134,7 +134,7 @@ func commandFunc(w http.ResponseWriter, req *http.Request) {
 			json.NewEncoder(w).Encode(event)
 		}
 		// push to Core Data
-		go common.SendEvent(event)
+		//go common.SendEvent(event)
 	}
 }
 
@@ -156,11 +156,11 @@ func commandAllFunc(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, appErr.Message(), appErr.Code())
 	} else if len(events) > 0 {
 		// push to Core Data
-		for _, event := range events {
-			if event != nil {
-				go common.SendEvent(event)
-			}
-		}
+		// for _, event := range events {
+		// 	if event != nil {
+		// 		go common.SendEvent(event)
+		// 	}
+		// }
 		w.Header().Set(clients.ContentType, clients.ContentTypeJSON)
 		json.NewEncoder(w).Encode(events)
 	}
