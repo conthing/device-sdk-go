@@ -85,7 +85,6 @@ func CommandHandler(vars map[string]string, body string, method string) (*dsMode
 		dKey = vars[common.NameVar]
 		d, ok = cache.Devices().ForName(dKey)
 	}
-	utils_common.Log.Debugf("device:%+v",d)
 	if !ok {
 		msg := fmt.Sprintf("Device: %s not found; %s", dKey, method)
 		common.LoggingClient.Error(msg)
