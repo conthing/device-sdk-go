@@ -149,7 +149,6 @@ func newDeviceCache(devices []contract.Device) DeviceCache {
 		dev := device
 		devicesMap.Store(device.Name, &dev)
 		nameMap.Store(device.Id, device.Name)
-		common.Log.Debugf("device:%+v,devicename:%s",&device,device.Name)
 	}
 	dc = &deviceCache{dMap: &devicesMap, nameMap: nameMap}
 	return dc
