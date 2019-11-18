@@ -258,7 +258,7 @@ func (p *profileCache) ResourceOperation(profileName string, deviceResource stri
 func retrieveFirstRObyDeviceResource(rosMap map[string][]contract.ResourceOperation, deviceResource string) (contract.ResourceOperation, bool) {
 	for _, ros := range rosMap {
 		for _, ro := range ros {
-			if ro.DeviceResource == deviceResource {
+			if ro.Object == deviceResource {
 				return ro, true
 			}
 		}
