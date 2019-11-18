@@ -1,3 +1,10 @@
+// -*- Mode: Go; indent-tabs-mode: t -*-
+//
+// Copyright (C) 2017-2018 Canonical Ltd
+// Copyright (C) 2018-2019 IOTech Ltd
+//
+// SPDX-License-Identifier: Apache-2.0
+
 package cache
 
 import (
@@ -5,8 +12,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/conthing/device-sdk-go/sdk/common"
-
+	"github.com/edgexfoundry/device-sdk-go/internal/common"
 	contract "github.com/edgexfoundry/go-mod-core-contracts/models"
 )
 
@@ -15,181 +21,80 @@ var (
 )
 
 type ProfileCache interface {
-	All() []contract.DeviceProfile
 	ForName(name string) (contract.DeviceProfile, bool)
 	ForId(id string) (contract.DeviceProfile, bool)
+	All() []contract.DeviceProfile
 	Add(profile contract.DeviceProfile) error
 	Update(profile contract.DeviceProfile) error
 	Remove(id string) error
 	RemoveByName(name string) error
-	CommandExists(profileName string, cmd string) (bool, error)
 	DeviceResource(profileName string, resourceName string) (contract.DeviceResource, bool)
-	ResourceOperation(profileName string, object string, method string) (contract.ResourceOperation, error)
+	CommandExists(profileName string, cmd string) (bool, error)
 	ResourceOperations(profileName string, cmd string, method string) ([]contract.ResourceOperation, error)
+	ResourceOperation(profileName string, deviceResource string, method string) (contract.ResourceOperation, error)
 }
 
 type profileCache struct {
-	dpMap    sync.Map
-	nameMap  sync.Map
-	drMap    sync.Map
-	dcMap    sync.Map
-	setOpMap sync.Map
-	ccMap    sync.Map
-}
-
-func (p *profileCache) All() []contract.DeviceProfile {
-	var ps []contract.DeviceProfile
-	f := func(k, v interface{}) bool {
-		ps = append(ps, v.(contract.DeviceProfile))
-		return true
-	}
-	p.dpMap.Range(f)
-	return ps
+	dpMap    map[string]contract.DeviceProfile // key is DeviceProfile name
+	nameMap  map[string]string                 // key is id, and value is DeviceProfile name
+	drMap    map[string]map[string]contract.DeviceResource
+	dcMap    map[string]map[string][]contract.ResourceOperation
+	setOpMap map[string]map[string][]contract.ResourceOperation
+	ccMap    map[string]map[string]contract.Command
+	mutex    sync.Mutex
 }
 
 func (p *profileCache) ForName(name string) (contract.DeviceProfile, bool) {
-	dp, ok := p.dpMap.Load(name)
-	return dp.(contract.DeviceProfile), ok
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+
+	dp, ok := p.dpMap[name]
+	return dp, ok
 }
 
 func (p *profileCache) ForId(id string) (contract.DeviceProfile, bool) {
-	name, ok := p.nameMap.Load(id)
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+
+	name, ok := p.nameMap[id]
 	if !ok {
 		return contract.DeviceProfile{}, ok
 	}
 
-	dp, ok := p.dpMap.Load(name.(string))
-	return dp.(contract.DeviceProfile), ok
+	dp, ok := p.dpMap[name]
+	return dp, ok
+}
+
+func (p *profileCache) All() []contract.DeviceProfile {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+
+	ps := make([]contract.DeviceProfile, len(p.dpMap))
+	i := 0
+	for _, profile := range p.dpMap {
+		ps[i] = profile
+		i++
+	}
+	return ps
 }
 
 func (p *profileCache) Add(profile contract.DeviceProfile) error {
-	if _, ok := p.dpMap.Load(profile.Name); ok {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+
+	return p.add(profile)
+}
+
+func (p *profileCache) add(profile contract.DeviceProfile) error {
+	if _, ok := p.dpMap[profile.Name]; ok {
 		return fmt.Errorf("device profile %s has already existed in cache", profile.Name)
 	}
-
-	p.dpMap.Store(profile.Name, profile)
-	p.nameMap.Store(profile.Id, profile.Name)
-	p.drMap.Store(profile.Name, deviceResourceSliceToMap(profile.DeviceResources))
-	get, set := profileResourceSliceToMaps(profile.DeviceCommands)
-	p.dcMap.Store(profile.Name, get)
-	p.setOpMap.Store(profile.Name, set)
-	p.ccMap.Store(profile.Name, commandSliceToMap(profile.CoreCommands))
+	p.dpMap[profile.Name] = profile
+	p.nameMap[profile.Id] = profile.Name
+	p.drMap[profile.Name] = deviceResourceSliceToMap(profile.DeviceResources)
+	p.dcMap[profile.Name], p.setOpMap[profile.Name] = profileResourceSliceToMaps(profile.DeviceCommands)
+	p.ccMap[profile.Name] = commandSliceToMap(profile.CoreCommands)
 	return nil
-}
-
-func (p *profileCache) Update(profile contract.DeviceProfile) error {
-	if err := p.Remove(profile.Id); err != nil {
-		return err
-	}
-
-	return p.Add(profile)
-}
-
-func (p *profileCache) Remove(id string) error {
-	name, ok := p.nameMap.Load(id)
-	if !ok {
-		return fmt.Errorf("device profile %s does not exist in cache", id)
-	}
-
-	return p.RemoveByName(name.(string))
-}
-
-func (p *profileCache) RemoveByName(name string) error {
-	profile, ok := p.dpMap.Load(name)
-	if !ok {
-		return fmt.Errorf("device profile %s does not exist in cache", name)
-	}
-
-	p.dpMap.Delete(name)
-	pf := profile.(contract.DeviceProfile)
-	p.nameMap.Delete(pf.Id)
-	p.drMap.Delete(name)
-	p.dcMap.Delete(name)
-	p.setOpMap.Delete(name)
-	p.ccMap.Delete(name)
-	return nil
-}
-
-func (p *profileCache) CommandExists(profileName string, cmd string) (bool, error) {
-	commands, ok := p.ccMap.Load(profileName)
-	if !ok {
-		err := fmt.Errorf("specified profile: %s not found", profileName)
-		return false, err
-	}
-	cmds := commands.(map[string]contract.Command)
-	if _, ok := cmds[cmd]; !ok {
-		return false, nil
-	}
-
-	return true, nil
-}
-
-func (p *profileCache) DeviceResource(profileName string, resourceName string) (contract.DeviceResource, bool) {
-	drsm, ok := p.drMap.Load(profileName)
-	if !ok {
-		return contract.DeviceResource{}, ok
-	}
-	drs := drsm.(map[string]contract.DeviceResource)
-	dr, ok := drs[resourceName]
-	return dr, ok
-}
-
-func (p *profileCache) ResourceOperations(profileName string, cmd string, method string) ([]contract.ResourceOperation, error) {
-	var resOps []contract.ResourceOperation
-	var rosMap map[string][]contract.ResourceOperation
-	var ok bool
-	if strings.ToLower(method) == common.GetCmdMethod {
-		rosMapget, ok := p.dcMap.Load(profileName)
-		if !ok {
-			return nil, fmt.Errorf("specified profile:%s not found", profileName)
-		}
-		rosMap = rosMapget.(map[string][]contract.ResourceOperation)
-	} else if strings.ToLower(method) == common.SetCmdMethod {
-		rosMapset, ok := p.setOpMap.Load(profileName)
-		if !ok {
-			return nil, fmt.Errorf("specified profile: %s not found", profileName)
-		}
-		rosMap = rosMapset.(map[string][]contract.ResourceOperation)
-	}
-	if resOps, ok = rosMap[cmd]; !ok {
-		return nil, fmt.Errorf("specified cmd: %s not found", cmd)
-	}
-	return resOps, nil
-}
-
-func (p *profileCache) ResourceOperation(profileName string, object string, method string) (contract.ResourceOperation, error) {
-	var ro contract.ResourceOperation
-	var rosMap map[string][]contract.ResourceOperation
-	var ok bool
-	if strings.ToLower(method) == common.GetCmdMethod {
-		rosMapget, ok := p.dcMap.Load(profileName)
-		if !ok {
-			return ro, fmt.Errorf("specified profile:%s not found", profileName)
-		}
-		rosMap = rosMapget.(map[string][]contract.ResourceOperation)
-	} else if strings.ToLower(method) == common.SetCmdMethod {
-		rosMapset, ok := p.setOpMap.Load(profileName)
-		if !ok {
-			return ro, fmt.Errorf("specified profile:%s not found", profileName)
-		}
-		rosMap = rosMapset.(map[string][]contract.ResourceOperation)
-	}
-
-	if ro, ok = retrieveFirstRObyObject(rosMap, object); !ok {
-		return ro, fmt.Errorf("specified ResourceOperation by object %s not found", object)
-	}
-	return ro, nil
-}
-
-func retrieveFirstRObyObject(rosMap map[string][]contract.ResourceOperation, object string) (contract.ResourceOperation, bool) {
-	for _, ros := range rosMap {
-		for _, ro := range ros {
-			if ro.Object == object {
-				return ro, true
-			}
-		}
-	}
-	return contract.ResourceOperation{}, false
 }
 
 func deviceResourceSliceToMap(deviceResources []contract.DeviceResource) map[string]contract.DeviceResource {
@@ -222,21 +127,159 @@ func commandSliceToMap(commands []contract.Command) map[string]contract.Command 
 	return result
 }
 
+func (p *profileCache) Update(profile contract.DeviceProfile) error {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+
+	if err := p.remove(profile.Id); err != nil {
+		return err
+	}
+	return p.add(profile)
+}
+
+func (p *profileCache) Remove(id string) error {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+
+	return p.remove(id)
+}
+
+func (p *profileCache) remove(id string) error {
+	name, ok := p.nameMap[id]
+	if !ok {
+		return fmt.Errorf("device profile %s does not exist in cache", id)
+	}
+
+	return p.removeByName(name)
+}
+
+func (p *profileCache) RemoveByName(name string) error {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+
+	return p.removeByName(name)
+}
+
+func (p *profileCache) removeByName(name string) error {
+	profile, ok := p.dpMap[name]
+	if !ok {
+		return fmt.Errorf("device profile %s does not exist in cache", name)
+	}
+
+	delete(p.dpMap, name)
+	delete(p.nameMap, profile.Id)
+	delete(p.drMap, name)
+	delete(p.dcMap, name)
+	delete(p.setOpMap, name)
+	delete(p.ccMap, name)
+	return nil
+}
+
+func (p *profileCache) DeviceResource(profileName string, resourceName string) (contract.DeviceResource, bool) {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+
+	drs, ok := p.drMap[profileName]
+	if !ok {
+		return contract.DeviceResource{}, ok
+	}
+
+	dr, ok := drs[resourceName]
+	return dr, ok
+}
+
+// CommandExists returns a bool indicating whether the specified command exists for the
+// specified (by name) device. If the specified device doesn't exist, an error is returned.
+func (p *profileCache) CommandExists(profileName string, cmd string) (bool, error) {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+
+	commands, ok := p.ccMap[profileName]
+	if !ok {
+		err := fmt.Errorf("specified profile: %s not found", profileName)
+		return false, err
+	}
+
+	if _, ok := commands[cmd]; !ok {
+		return false, nil
+	}
+
+	return true, nil
+}
+
+// Get ResourceOperations
+func (p *profileCache) ResourceOperations(profileName string, cmd string, method string) ([]contract.ResourceOperation, error) {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+
+	var resOps []contract.ResourceOperation
+	var rosMap map[string][]contract.ResourceOperation
+	var ok bool
+	if strings.ToLower(method) == common.GetCmdMethod {
+		if rosMap, ok = p.dcMap[profileName]; !ok {
+			return nil, fmt.Errorf("specified profile: %s not found", profileName)
+		}
+	} else if strings.ToLower(method) == common.SetCmdMethod {
+		if rosMap, ok = p.setOpMap[profileName]; !ok {
+			return nil, fmt.Errorf("specified profile: %s not found", profileName)
+		}
+	}
+
+	if resOps, ok = rosMap[cmd]; !ok {
+		return nil, fmt.Errorf("specified cmd: %s not found", cmd)
+	}
+	return resOps, nil
+}
+
+// Return the first matched ResourceOperation
+func (p *profileCache) ResourceOperation(profileName string, deviceResource string, method string) (contract.ResourceOperation, error) {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+
+	var ro contract.ResourceOperation
+	var rosMap map[string][]contract.ResourceOperation
+	var ok bool
+	if strings.ToLower(method) == common.GetCmdMethod {
+		if rosMap, ok = p.dcMap[profileName]; !ok {
+			return ro, fmt.Errorf("specified profile: %s not found", profileName)
+		}
+	} else if strings.ToLower(method) == common.SetCmdMethod {
+		if rosMap, ok = p.setOpMap[profileName]; !ok {
+			return ro, fmt.Errorf("specified profile: %s not found", profileName)
+		}
+	}
+
+	if ro, ok = retrieveFirstRObyDeviceResource(rosMap, deviceResource); !ok {
+		return ro, fmt.Errorf("specified ResourceOperation by deviceResource %s not found", deviceResource)
+	}
+	return ro, nil
+}
+
+func retrieveFirstRObyDeviceResource(rosMap map[string][]contract.ResourceOperation, deviceResource string) (contract.ResourceOperation, bool) {
+	for _, ros := range rosMap {
+		for _, ro := range ros {
+			if ro.DeviceResource == deviceResource {
+				return ro, true
+			}
+		}
+	}
+	return contract.ResourceOperation{}, false
+}
+
 func newProfileCache(profiles []contract.DeviceProfile) ProfileCache {
-	var dpMap sync.Map
-	var nameMap sync.Map
-	var drMap sync.Map
-	var getOpMap sync.Map
-	var setOpMap sync.Map
-	var cmdMap sync.Map
-	for _, profile := range profiles {
-		dpMap.Store(profile.Name, profile)
-		nameMap.Store(profile.Id, profile.Name)
-		drMap.Store(profile.Name, deviceResourceSliceToMap(profile.DeviceResources))
-		getResult, setResult := profileResourceSliceToMaps(profile.DeviceCommands)
-		getOpMap.Store(profile.Name, getResult)
-		setOpMap.Store(profile.Name, setResult)
-		cmdMap.Store(profile.Name, commandSliceToMap(profile.CoreCommands))
+	defaultSize := len(profiles) * 2
+	dpMap := make(map[string]contract.DeviceProfile, defaultSize)
+	nameMap := make(map[string]string, defaultSize)
+	drMap := make(map[string]map[string]contract.DeviceResource, defaultSize)
+	getOpMap := make(map[string]map[string][]contract.ResourceOperation, defaultSize)
+	setOpMap := make(map[string]map[string][]contract.ResourceOperation, defaultSize)
+	cmdMap := make(map[string]map[string]contract.Command, defaultSize)
+	for _, dp := range profiles {
+		dpMap[dp.Name] = dp
+		nameMap[dp.Id] = dp.Name
+		drMap[dp.Name] = deviceResourceSliceToMap(dp.DeviceResources)
+		getOpMap[dp.Name], setOpMap[dp.Name] = profileResourceSliceToMaps(dp.DeviceCommands)
+		cmdMap[dp.Name] = commandSliceToMap(dp.CoreCommands)
 	}
 	pc = &profileCache{dpMap: dpMap, nameMap: nameMap, drMap: drMap, dcMap: getOpMap, setOpMap: setOpMap, ccMap: cmdMap}
 	return pc
